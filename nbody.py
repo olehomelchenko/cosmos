@@ -6,7 +6,7 @@ from io import StringIO
 import time
 import matplotlib.pyplot as plt
 
-G = st.sidebar.number_input("G", value=1,min_value=1, step=1)
+G = st.sidebar.number_input("G", value=1, min_value=1, step=1)
 N = st.sidebar.number_input("Number of bodies", min_value=2, value=3)
 dt = st.sidebar.number_input("DT", min_value=0.00001, value=0.01, step=0.5)
 pos_std = st.sidebar.number_input("Pos STD", value=1, min_value=1, step=10)
@@ -22,7 +22,9 @@ ex_string = st.text_area("Manual Array of objects", value=ex_string)
 ioo = StringIO(ex_string)
 numpy_obj = pd.read_csv(ioo, sep=",", header=None).to_numpy()
 
-u = Universe(G, N, dt=dt, pos_std=pos_std, mas_std=mas_std, acc_std=acc_std, obj=numpy_obj)
+u = Universe(
+    G, N, dt=dt, pos_std=pos_std, mas_std=mas_std, acc_std=acc_std, obj=numpy_obj
+)
 
 # st_plot = st.pyplot(u.img[0])
 st_iter = st.empty()
@@ -37,7 +39,9 @@ st_obj_head = st.empty()
 while True:
     u.obj = u.calc_positions()
     # u.plot_bodies(ax, xlim=(-10, 10), ylim=(-10, 10))
-    st_altair.altair_chart(u.plot_altair(x_domain=[-scale, scale], y_domain=[-scale, scale]))
+    st_altair.altair_chart(
+        u.plot_altair(x_domain=[-scale, scale], y_domain=[-scale, scale])
+    )
     # , xlim=(-10, 10), ylim=(-10, 10)
     # st_plot.pyplot(u.img[0])
     st_iter.text(u.current_iteration)
