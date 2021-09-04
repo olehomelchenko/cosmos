@@ -11,16 +11,16 @@ def get_radius(arr):
 class Universe:
     def __init__(
         self,
-        G,
-        N,
-        dt,
-        pos_std=1,
-        mas_std=1,
-        acc_std=1,
-        seed=None,
-        heavy=False,
-        obj=None,
-    ):
+        G: float,
+        N: int,
+        dt: float,
+        pos_std: int = 1,
+        mas_std: int = 1,
+        acc_std: int = 1,
+        seed: int = None,
+        heavy: bool = False,
+        obj: np.array = None,
+    ) -> None:
         if seed:
             np.random.seed(seed)
         POS_STD = pos_std
