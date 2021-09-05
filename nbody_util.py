@@ -2,6 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import altair as alt
 import pandas as pd
+from typing import Tuple
+
+# declare commonly used types
+Vector2d = Tuple[float, float]
 
 
 class Universe:
@@ -61,7 +65,18 @@ class Universe:
     def get_obj_df(self):
         return pd.DataFrame(self.obj, columns=["x", "y", "m", "dx", "dy"])
 
-    def plot_altair(self, x_domain=None, y_domain=None):
+    def plot_altair(
+        self, x_domain: Vector2d = None, y_domain: Vector2d = None
+    ) -> alt.Chart:
+        """Plot an altair chart of current positions of objects.
+
+        Args:
+            x_domain (Vector2d, optional): tuple of X coordinates that define the horizontal scale. Defaults to None.
+            y_domain (Vector2d, optional): tuple of Y coordinates that define the vertical scale. Defaults to None.
+
+        Returns:
+            alt.Chart: [description]
+        """
         df = self.get_obj_df()
         x_domain = x_domain or np.percentile(df["x"], [0, 100])
         y_domain = y_domain or np.percentile(df["y"], [0, 100])
