@@ -1,10 +1,8 @@
 import streamlit as st
 from nbody_util import Universe
-import numpy as np
 import pandas as pd
 from io import StringIO
 import time
-import matplotlib.pyplot as plt
 
 NUM = st.sidebar.number_input
 
