@@ -6,13 +6,15 @@ from io import StringIO
 import time
 import matplotlib.pyplot as plt
 
-G = st.sidebar.number_input("G", value=1, min_value=1, step=1)
-N = st.sidebar.number_input("Number of bodies", min_value=2, value=3)
-dt = st.sidebar.number_input("DT", min_value=0.00001, value=0.01, step=0.5)
-pos_std = st.sidebar.number_input("Pos STD", value=1, min_value=1, step=10)
-mas_std = st.sidebar.number_input("Mas STD", value=1, min_value=1, step=10)
-acc_std = st.sidebar.number_input("Acc STD", value=1, min_value=1, step=10)
-scale = st.sidebar.number_input("Scale", value=100, min_value=1, step=1)
+NUM = st.sidebar.number_input
+
+G = NUM("G", value=1, min_value=1, step=1)
+N = NUM("Number of bodies", min_value=2, value=3)
+dt = NUM("DT", min_value=0.00001, value=0.01, step=0.5)
+pos_std = NUM("Pos STD", value=1, min_value=1, step=10)
+mas_std = NUM("Mas STD", value=1, min_value=1, step=10)
+acc_std = NUM("Acc STD", value=1, min_value=1, step=10)
+scale = NUM("Scale", value=100, min_value=1, step=1)
 
 ex_string = """0,0,1000,0,0
 0,10,40,10,0
