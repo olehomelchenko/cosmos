@@ -21,34 +21,43 @@ class Universe:
         heavy: bool = False,
         obj: np.array = None,
     ) -> None:
-        if seed:
-            np.random.seed(seed)
-        POS_STD = pos_std
-        MAS_STD = mas_std
-        ACC_STD = acc_std
         self.G = G
         self.N = N
         self.dt = dt
+        self.heavy = heavy
+        self.seed = seed
+        self.pos_std = pos_std
+        self.mas_std = mas_std
+        self.acc_std = acc_std
         self.img = None
         self.current_iteration = 0
         self.current_dt = 0
-        if obj is None:
-            positions = POS_STD * np.random.randn(N, 2)
-            masses = MAS_STD * np.abs(np.random.randn(N, 1))
-            if heavy:
-                masses = 1.1 ** (masses * (100.0 / np.max(masses)))
-                masses = 1000 * masses / np.max(masses)
-            acc = ACC_STD * np.random.randn(N, 2)
 
-            self.obj = np.c_[positions, masses, acc]
+        if obj is None:
+            self.obj = self.generate_objects()
+            print("generating objects...")
         else:
+            print("assigning external object")
             self.obj = obj
+
         self.obj_df = self.get_obj_df()
 
         self.generate_plot()
         self.borders = self.get_borders()
         self.scatter = None
         self.quiver = None
+
+    def generate_objects(self) -> np.array:
+        if self.seed:
+            np.random.seed(self.seed)
+        positions = self.pos_std * np.random.randn(self.N, 2)
+        masses = self.mas_std * np.abs(np.random.randn(self.N, 1))
+        if self.heavy:
+            masses = 1.1 ** (masses * (100.0 / np.max(masses)))
+            masses = 1000 * masses / np.max(masses)
+        acc = self.acc_std * np.random.randn(self.N, 2)
+        return np.c_[positions, masses, acc]
+        return pd.DataFrame(arr, columns=["x", "y", "m", "dx", "dy"])
 
     def get_obj_df(self):
         return pd.DataFrame(self.obj, columns=["x", "y", "m", "dx", "dy"])
