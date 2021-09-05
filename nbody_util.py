@@ -77,9 +77,13 @@ class Universe:
         )
         return x
 
-    def get_com(self):
-        arr = self.obj
-        com = np.average(arr[:, :2], weights=arr[:, 2], axis=0)
+    def get_center_of_masses(self) -> np.array:
+        """Calculate center of masses based on the current positions of the objects
+
+        Returns:
+            np.array: 2x1 array with x, y coordinates of the center of masses
+        """
+        com = np.average(self.obj[:, :2], weights=self.obj[:, 2], axis=0)
         return com
 
     def get_borders(self):
@@ -100,7 +104,7 @@ class Universe:
         self, i=None, ax_obj=None, quiver=True, xlim=None, ylim=None, auto_center=None
     ):
         obj = self.obj
-        com = self.get_com()
+        com = self.get_center_of_masses()
         fig, ax = self.img
         if ax_obj:
             ax = ax_obj
@@ -112,7 +116,7 @@ class Universe:
         )
         if quiver:
             ax.quiver(obj[:, 0], obj[:, 1], obj[:, 3], obj[:, 4], alpha=0.2)
-        ax.plot(*self.get_com(), "r+")
+        ax.plot(*self.get_center_of_masses(), "r+")
         self.img = fig, ax
         return ax
 
