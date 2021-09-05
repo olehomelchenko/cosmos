@@ -4,10 +4,6 @@ import altair as alt
 import pandas as pd
 
 
-def get_radius(arr):
-    return np.power(arr / (3 / 4 * np.pi), 1 / 3)
-
-
 class Universe:
     def __init__(
         self,
@@ -59,6 +55,9 @@ class Universe:
         return np.c_[positions, masses, acc]
         return pd.DataFrame(arr, columns=["x", "y", "m", "dx", "dy"])
 
+    def get_object_radius(self, objects: np.array) -> np.array:
+        return np.power(objects / (3 / 4 * np.pi), 1 / 3)
+
     def get_obj_df(self):
         return pd.DataFrame(self.obj, columns=["x", "y", "m", "dx", "dy"])
 
@@ -92,7 +91,7 @@ class Universe:
             self.img = plt.subplots()
             fig, ax = self.img
             scatter = ax.scatter(
-                obj[:, 0], obj[:, 1], s=get_radius(obj[:, 2]), alpha=0.8
+                obj[:, 0], obj[:, 1], s=self.get_object_radius(obj[:, 2]), alpha=0.8
             )
             # quiver = ax.quiver(obj[:, 0], obj[:, 1], obj[:, 3], obj[:, 4], alpha=0.2)
             # self.img = fig, ax
@@ -108,7 +107,9 @@ class Universe:
         ax.clear()
         ax.set_xlim(xlim[0] + com[0], xlim[1] + com[0]) if xlim else None
         ax.set_ylim(ylim[0] + com[1], ylim[1] + com[1]) if ylim else None
-        scatter = ax.scatter(obj[:, 0], obj[:, 1], s=get_radius(obj[:, 2]), alpha=0.8)
+        scatter = ax.scatter(
+            obj[:, 0], obj[:, 1], s=self.get_object_radius(obj[:, 2]), alpha=0.8
+        )
         if quiver:
             ax.quiver(obj[:, 0], obj[:, 1], obj[:, 3], obj[:, 4], alpha=0.2)
         ax.plot(*self.get_com(), "r+")
