@@ -36,7 +36,7 @@ st_obj_head = st.empty()
 while True:
     u.obj = u.calc_positions()
     st_altair.altair_chart(
-        u.plot_altair(x_domain=[-scale, scale], y_domain=[-scale, scale])
+        u.plot_altair(x_domain=(-scale, scale), y_domain=(-scale, scale))
     )
     st_iter.text(u.current_iteration)
     st_borders.text(u.borders)
