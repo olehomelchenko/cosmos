@@ -41,4 +41,3 @@ while True:
     st_iter.text(u.current_iteration)
     st_borders.text(u.borders)
     st_obj_head.table(u.obj[0:10])
-    time.sleep(0.05)
