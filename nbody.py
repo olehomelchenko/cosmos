@@ -1,3 +1,4 @@
+from pandas.core import frame
 import streamlit as st
 from nbody_util import Universe
 import pandas as pd
@@ -13,6 +14,7 @@ pos_std = NUM("Pos STD", value=1, min_value=1, step=10)
 mas_std = NUM("Mas STD", value=1, min_value=1, step=10)
 acc_std = NUM("Acc STD", value=1, min_value=1, step=10)
 scale = NUM("Scale", value=100, min_value=1, step=1)
+frame_crop = NUM("Frame Crop", value=10, min_value=1, step=10)
 
 ex_string = """0,0,1000,0,0
 0,10,40,10,0
@@ -35,7 +37,6 @@ st_obj_head = st.empty()
 
 while True:
     u.obj = u.calc_positions()
-    st_altair.altair_chart(
-        u.plot_altair(x_domain=(-scale, scale), y_domain=(-scale, scale))
-    )
-    st_iter.text(u.current_iteration)
+    if u.current_iteration % frame_crop == 0:
+        st_altair.altair_chart(u.plot_altair((-scale, scale), (-scale, scale)))
+        st_iter.text(u.current_iteration)
