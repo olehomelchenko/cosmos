@@ -26,10 +26,7 @@ u = Universe(
     G, N, dt=dt, pos_std=pos_std, mas_std=mas_std, acc_std=acc_std, obj=numpy_obj
 )
 
-# st_plot = st.pyplot(u.img[0])
 st_iter = st.empty()
-
-# fig, ax = plt.subplots()
 
 st_altair = st.empty()
 st_borders = st.empty()
@@ -38,12 +35,9 @@ st_obj_head = st.empty()
 
 while True:
     u.obj = u.calc_positions()
-    # u.plot_bodies(ax, xlim=(-10, 10), ylim=(-10, 10))
     st_altair.altair_chart(
         u.plot_altair(x_domain=[-scale, scale], y_domain=[-scale, scale])
     )
-    # , xlim=(-10, 10), ylim=(-10, 10)
-    # st_plot.pyplot(u.img[0])
     st_iter.text(u.current_iteration)
     st_borders.text(u.borders)
     st_obj_head.table(u.obj[0:10])
