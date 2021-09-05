@@ -215,12 +215,15 @@ class Universe:
                 forces[j] -= list(force)
         return forces
 
-    def calc_positions(self, alt=False):
-        if alt:
-            forces = self.get_total_forces_alt()
-        else:
-            forces = self.get_total_forces()
+    def calc_positions(self, reset_com: bool = False) -> np.array:
+
+        forces = self.get_total_forces()
+
         new_positions = self.move_all_bodies(forces)
+        if reset_com:
+            com = self.get_center_of_masses()
+            new_positions[:, 0:2] = new_positions[:, 0:2] - com
+            # new_positions = new_positions - com
         self.current_iteration += 1
         self.current_dt += self.dt
         self.borders = self.get_borders()
