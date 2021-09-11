@@ -62,8 +62,15 @@ class Universe:
     def get_object_radius(self, objects: np.array) -> np.array:
         return np.power(objects / (3 / 4 * np.pi), 1 / 3)
 
-    def get_obj_df(self):
-        return pd.DataFrame(self.obj, columns=["x", "y", "m", "dx", "dy"])
+    def get_obj_df(self) -> pd.DataFrame:
+        """Generate dataframe from object positions
+
+        Returns:
+            pd.DataFrame: datafraim that contains positions, masses, and accelerations of each body
+        """
+        df = pd.DataFrame(self.obj, columns=["x", "y", "m", "dx", "dy"])
+        df['iter'] = self.current_iteration
+        return df
 
     def plot_altair(
         self, x_domain: Vector2d = None, y_domain: Vector2d = None
