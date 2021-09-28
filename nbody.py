@@ -2,8 +2,16 @@ import streamlit as st
 from nbody_util import Universe
 import pandas as pd
 from io import StringIO
+import numpy as np
 import plotly.express as px
 from datetime import datetime
+
+import matplotlib
+from matplotlib.animation import FuncAnimation, FFMpegWriter
+import matplotlib.pyplot as plt
+import streamlit.components.v1 as comp
+
+matplotlib.use("TkAgg")
 
 NUM = st.sidebar.number_input
 
@@ -14,7 +22,7 @@ pos_std = 1  # NUM("Pos STD", value=1, min_value=1, step=10)
 mas_std = 1  # NUM("Mas STD", value=1, min_value=1, step=10)
 acc_std = 1  # NUM("Acc STD", value=1, min_value=1, step=10)
 scale = NUM("Scale", value=100, min_value=1, step=1)
-number_of_frames = NUM("Num of frames", value=10000, min_value=1)
+number_of_frames = NUM("Num of frames", value=1000, min_value=1)
 frame_crop = NUM("Frame Crop", value=100, min_value=1, step=10)
 
 ex_string = """0,0,1000,0,0
@@ -56,15 +64,40 @@ st.text(f"Generating {u.current_iteration} iterations for {(time_end - time_star
 
 st.dataframe(history_df)
 
-fig = px.scatter(
-    history_df,
-    x="x",
-    y="y",
-    animation_frame="iter",
-    size="m",
-    range_x=(-scale, scale),
-    range_y=(-scale, scale),
-    width=700, height=700
-)
+df = history_df[history_df["iter"] == 0]
 
-st.plotly_chart(fig)
+fig = plt.figure()
+
+scat = plt.scatter(x=df["x"], y=df["y"], s=df["m"])
+
+
+def update_plot(i):
+    df = history_df[history_df["iter"] == i]
+    x = df["x"]
+    y = df["y"]
+    st.text(df)
+    scat.set_offsets(np.c_[x, y])
+    return scat
+
+
+ani = FuncAnimation(fig, update_plot, frames=history_df["iter"].unique(), blit=False)
+
+# FFwriter = FFMpegWriter()
+# ani.save('animation.mp4', writer = FFwriter)
+
+
+comp.html(ani.to_jshtml(), height=800)
+
+# fig = px.scatter(
+#     history_df,
+#     x="x",
+#     y="y",
+#     animation_frame="iter",
+#     size="m",
+#     range_x=(-scale, scale),
+#     range_y=(-scale, scale),
+#     width=700,
+#     height=700,
+# )
+
+# st.plotly_chart(fig)
