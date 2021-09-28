@@ -2,10 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import altair as alt
 import pandas as pd
+from typing import Tuple
 
-
-def get_radius(arr):
-    return np.power(arr / (3 / 4 * np.pi), 1 / 3)
+# declare commonly used types
+Vector2d = Tuple[float, float]
 
 
 class Universe:
@@ -21,28 +21,25 @@ class Universe:
         heavy: bool = False,
         obj: np.array = None,
     ) -> None:
-        if seed:
-            np.random.seed(seed)
-        POS_STD = pos_std
-        MAS_STD = mas_std
-        ACC_STD = acc_std
         self.G = G
         self.N = N
         self.dt = dt
+        self.heavy = heavy
+        self.seed = seed
+        self.pos_std = pos_std
+        self.mas_std = mas_std
+        self.acc_std = acc_std
         self.img = None
         self.current_iteration = 0
         self.current_dt = 0
-        if obj is None:
-            positions = POS_STD * np.random.randn(N, 2)
-            masses = MAS_STD * np.abs(np.random.randn(N, 1))
-            if heavy:
-                masses = 1.1 ** (masses * (100.0 / np.max(masses)))
-                masses = 1000 * masses / np.max(masses)
-            acc = ACC_STD * np.random.randn(N, 2)
 
-            self.obj = np.c_[positions, masses, acc]
+        if obj is None:
+            self.obj = self.generate_objects()
+            print("generating objects...")
         else:
+            print("assigning external object")
             self.obj = obj
+
         self.obj_df = self.get_obj_df()
 
         self.generate_plot()
@@ -50,10 +47,43 @@ class Universe:
         self.scatter = None
         self.quiver = None
 
-    def get_obj_df(self):
-        return pd.DataFrame(self.obj, columns=["x", "y", "m", "dx", "dy"])
+    def generate_objects(self) -> np.array:
+        if self.seed:
+            np.random.seed(self.seed)
+        positions = self.pos_std * np.random.randn(self.N, 2)
+        masses = self.mas_std * np.abs(np.random.randn(self.N, 1))
+        if self.heavy:
+            masses = 1.1 ** (masses * (100.0 / np.max(masses)))
+            masses = 1000 * masses / np.max(masses)
+        acc = self.acc_std * np.random.randn(self.N, 2)
+        return np.c_[positions, masses, acc]
+        return pd.DataFrame(arr, columns=["x", "y", "m", "dx", "dy"])
 
-    def plot_altair(self, x_domain=None, y_domain=None):
+    def get_object_radius(self, objects: np.array) -> np.array:
+        return np.power(objects / (3 / 4 * np.pi), 1 / 3)
+
+    def get_obj_df(self) -> pd.DataFrame:
+        """Generate dataframe from object positions
+
+        Returns:
+            pd.DataFrame: datafraim that contains positions, masses, and accelerations of each body
+        """
+        df = pd.DataFrame(self.obj, columns=["x", "y", "m", "dx", "dy"])
+        df['iter'] = self.current_iteration
+        return df
+
+    def plot_altair(
+        self, x_domain: Vector2d = None, y_domain: Vector2d = None
+    ) -> alt.Chart:
+        """Plot an altair chart of current positions of objects.
+
+        Args:
+            x_domain (Vector2d, optional): tuple of X coordinates that define the horizontal scale. Defaults to None.
+            y_domain (Vector2d, optional): tuple of Y coordinates that define the vertical scale. Defaults to None.
+
+        Returns:
+            alt.Chart: [description]
+        """
         df = self.get_obj_df()
         x_domain = x_domain or np.percentile(df["x"], [0, 100])
         y_domain = y_domain or np.percentile(df["y"], [0, 100])
@@ -69,9 +99,13 @@ class Universe:
         )
         return x
 
-    def get_com(self):
-        arr = self.obj
-        com = np.average(arr[:, :2], weights=arr[:, 2], axis=0)
+    def get_center_of_masses(self) -> np.array:
+        """Calculate center of masses based on the current positions of the objects
+
+        Returns:
+            np.array: 2x1 array with x, y coordinates of the center of masses
+        """
+        com = np.average(self.obj[:, :2], weights=self.obj[:, 2], axis=0)
         return com
 
     def get_borders(self):
@@ -83,7 +117,7 @@ class Universe:
             self.img = plt.subplots()
             fig, ax = self.img
             scatter = ax.scatter(
-                obj[:, 0], obj[:, 1], s=get_radius(obj[:, 2]), alpha=0.8
+                obj[:, 0], obj[:, 1], s=self.get_object_radius(obj[:, 2]), alpha=0.8
             )
             # quiver = ax.quiver(obj[:, 0], obj[:, 1], obj[:, 3], obj[:, 4], alpha=0.2)
             # self.img = fig, ax
@@ -92,17 +126,19 @@ class Universe:
         self, i=None, ax_obj=None, quiver=True, xlim=None, ylim=None, auto_center=None
     ):
         obj = self.obj
-        com = self.get_com()
+        com = self.get_center_of_masses()
         fig, ax = self.img
         if ax_obj:
             ax = ax_obj
         ax.clear()
         ax.set_xlim(xlim[0] + com[0], xlim[1] + com[0]) if xlim else None
         ax.set_ylim(ylim[0] + com[1], ylim[1] + com[1]) if ylim else None
-        scatter = ax.scatter(obj[:, 0], obj[:, 1], s=get_radius(obj[:, 2]), alpha=0.8)
+        scatter = ax.scatter(
+            obj[:, 0], obj[:, 1], s=self.get_object_radius(obj[:, 2]), alpha=0.8
+        )
         if quiver:
             ax.quiver(obj[:, 0], obj[:, 1], obj[:, 3], obj[:, 4], alpha=0.2)
-        ax.plot(*self.get_com(), "r+")
+        ax.plot(*self.get_center_of_masses(), "r+")
         self.img = fig, ax
         return ax
 
@@ -186,12 +222,15 @@ class Universe:
                 forces[j] -= list(force)
         return forces
 
-    def calc_positions(self, alt=False):
-        if alt:
-            forces = self.get_total_forces_alt()
-        else:
-            forces = self.get_total_forces()
+    def calc_positions(self, reset_com: bool = False) -> np.array:
+
+        forces = self.get_total_forces()
+
         new_positions = self.move_all_bodies(forces)
+        if reset_com:
+            com = self.get_center_of_masses()
+            new_positions[:, 0:2] = new_positions[:, 0:2] - com
+            # new_positions = new_positions - com
         self.current_iteration += 1
         self.current_dt += self.dt
         self.borders = self.get_borders()
